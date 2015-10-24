@@ -7,15 +7,13 @@ import com.ele.data.analysis.csv.CsvMapper;
 import com.google.common.collect.Lists;
 
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
-/**
- * Created by majun on 15/10/23.
- */
 public class DataAnalysisProcessor implements DataAnalysisService {
     private final static String header = "id,type,name,location,xLong,yLong,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24\n";
     private final static String filePath = "location1.txt";
@@ -52,23 +50,23 @@ public class DataAnalysisProcessor implements DataAnalysisService {
         return format;
     }
 
-    public List getWarningLocationList(Date date) {
+    public List getWarningLocationList(Date date, int threshold) {
         String courrentTime = simpleDateFormat.format(date);
         if (courrentTime.equals("1")) {
             return new ArrayList<>();
         }
-        return locationInfos.stream().filter(locationPeopleInfo -> isWarn(locationPeopleInfo, courrentTime)).collect(toList());
-
+        return locationInfos.stream().filter(locationPeopleInfo -> isWarn(locationPeopleInfo, courrentTime, threshold)).collect(toList());
     }
 
-    private boolean isWarn(LocationPeopleInfo locationPeopleInfo, String courrentTime) {
+
+    private boolean isWarn(LocationPeopleInfo locationPeopleInfo, String courrentTime, int threshold) {
         String priorTime = String.valueOf(Integer.parseInt(courrentTime) - 1);
         String peopleNumberAtTime = getPeopleNumberAtTime(courrentTime, locationPeopleInfo);
         float peopleNumberAtCurrentTime = Integer.valueOf(peopleNumberAtTime);
         String peopleNumberAtTime1 = getPeopleNumberAtTime(priorTime, locationPeopleInfo);
         Integer integer = Integer.valueOf(peopleNumberAtTime1);
         float diff = peopleNumberAtCurrentTime - integer;
-        return (diff / peopleNumberAtCurrentTime) > 0.5 ? true : false;
+        return (diff / peopleNumberAtCurrentTime) > 0.5 && peopleNumberAtCurrentTime >= threshold ? true : false;
     }
 
     private List getData() {
@@ -79,71 +77,17 @@ public class DataAnalysisProcessor implements DataAnalysisService {
                 .fromCsv(reader);
     }
 
-    public static void main(String[] args) {
-        DataAnalysisProcessor dataAnalysisProcessor = new DataAnalysisProcessor();
-        List<LocationPeopleInfo> topNList = dataAnalysisProcessor.getTopNList(new Date(), 20);
-        for(LocationPeopleInfo locationPeopleInfo:topNList){
-            System.out.println(locationPeopleInfo);
-        }
-        System.out.println("======================");
-        List<LocationPeopleInfo> warningLocationList = dataAnalysisProcessor.getWarningLocationList(new Date());
-        for(LocationPeopleInfo locationPeopleInfo:warningLocationList){
-            System.out.println(locationPeopleInfo);
-        }
-    }
-
-    private String getPeopleNumberAtTime(String format, LocationPeopleInfo locationPeopleInfo) {
-        if (format.equals("01")||format.equals("1")) {
-            return locationPeopleInfo.getHour1();
-        } else if (format.equals("02")||format.equals("2")) {
-            return locationPeopleInfo.getHour2();
-        } else if (format.equals("03")||format.equals("3")) {
-            return locationPeopleInfo.getHour3();
-        } else if (format.equals("04")||format.equals("4")) {
-            return locationPeopleInfo.getHour4();
-        } else if (format.equals("05")||format.equals("5")) {
-            return locationPeopleInfo.getHour5();
-        } else if (format.equals("06")||format.equals("6")) {
-            return locationPeopleInfo.getHour6();
-        } else if (format.equals("07")||format.equals("7")) {
-            return locationPeopleInfo.getHour7();
-        } else if (format.equals("08")||format.equals("8")) {
-            return locationPeopleInfo.getHour8();
-        } else if (format.equals("09")||format.equals("9")) {
-            return locationPeopleInfo.getHour9();
-        } else if (format.equals("10")) {
-            return locationPeopleInfo.getHour10();
-        } else if (format.equals("11")) {
-            return locationPeopleInfo.getHour11();
-        } else if (format.equals("12")) {
-            return locationPeopleInfo.getHour12();
-        } else if (format.equals("13")) {
-            return locationPeopleInfo.getHour13();
-        } else if (format.equals("14")) {
-            return locationPeopleInfo.getHour14();
-        } else if (format.equals("15")) {
-            return locationPeopleInfo.getHour15();
-        } else if (format.equals("16")) {
-            return locationPeopleInfo.getHour16();
-        } else if (format.equals("17")) {
-            return locationPeopleInfo.getHour17();
-        } else if (format.equals("18")) {
-            return locationPeopleInfo.getHour18();
-        } else if (format.equals("19")) {
-            return locationPeopleInfo.getHour19();
-        } else if (format.equals("20")) {
-            return locationPeopleInfo.getHour20();
-        } else if (format.equals("21")) {
-            return locationPeopleInfo.getHour21();
-        } else if (format.equals("22")) {
-            return locationPeopleInfo.getHour22();
-        } else if (format.equals("23")) {
-            return locationPeopleInfo.getHour23();
-        } else if (format.equals("24")) {
-            return locationPeopleInfo.getHour24();
+    private  String getPeopleNumberAtTime(String time, LocationPeopleInfo locationPeopleInfo) {
+        String methodName = "getHour" + Integer.parseInt(time);
+        try {
+            Method declaredMethod = LocationPeopleInfo.class.getDeclaredMethod(methodName);
+            return (String) declaredMethod.invoke(locationPeopleInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
+
 
     static {
         stringFunctionHashMap.put("01", LocationPeopleInfo::getHour1);

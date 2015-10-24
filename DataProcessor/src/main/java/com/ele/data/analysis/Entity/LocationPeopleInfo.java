@@ -1,10 +1,7 @@
 package com.ele.data.analysis.Entity;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-
 import java.lang.reflect.Field;
-import java.util.List;
+import java.lang.reflect.Method;
 
 /**
  * Created by majun on 15/10/23.
@@ -291,21 +288,21 @@ public class LocationPeopleInfo {
     public void setHour14(String hour14) {
         this.hour14 = hour14;
     }
-
-    public static void main(String[] at) {
-//        for(int i=1;i<=24;i++){
-//            System.out.println("private String hour"+i+";");
+//
+//    public static void main(String[] at) {
+////        for(int i=1;i<=24;i++){
+////            System.out.println("private String hour"+i+";");
+////        }
+//        Field[] declaredFields = LocationPeopleInfo.class.getDeclaredFields();
+//        List<String> list= Lists.newArrayList();
+//        for (Field field : declaredFields) {
+//            String s = field.toString();
+//            list.add(s.substring(s.lastIndexOf(".") + 1));
 //        }
-        Field[] declaredFields = LocationPeopleInfo.class.getDeclaredFields();
-        List<String> list= Lists.newArrayList();
-        for (Field field : declaredFields) {
-            String s = field.toString();
-            list.add(s.substring(s.lastIndexOf(".") + 1));
-        }
-        System.out.println(list.size());
-        String join = Joiner.on(",").join(list);
-        System.out.println(join);
-    }
+//        System.out.println(list.size());
+//        String join = Joiner.on(",").join(list);
+//        System.out.println(join);
+//    }
 
 
     @Override
@@ -344,4 +341,23 @@ public class LocationPeopleInfo {
                 ", hour24='" + hour24 + '\'' +
                 '}';
     }
+    private String[] getFieldArrays(){
+        String[] strings = new String[31];
+        strings[0]=index;
+        strings[1]=id;
+        strings[2]=type;
+        strings[3]=name;
+        return null;
+    }
+    public static void main(String[]args){
+        Field[] declaredFields = LocationPeopleInfo.class.getDeclaredFields();
+        Method[] methods = LocationPeopleInfo.class.getDeclaredMethods();
+        for(Field field:declaredFields){
+            System.out.println(field.toString());
+        }
+        for(Method method:methods){
+            System.out.println(method.getName());
+        }
+    }
+
 }
